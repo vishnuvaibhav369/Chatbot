@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SRM Buddy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #e8e0ff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 16px;
+    }
+
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .logo-wrap img {
+      height: 90px;
+      width: auto;
+      border-radius: 12px;
+    }
+
+    .top {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .top h1 {
+      font-size: 24px;
+      color: #5c35d4;
+      margin-bottom: 4px;
+    }
+
+    .top p {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .box {
+      background: #fff;
+      border-radius: 18px;
+      border: 2px solid #d4c9ff;
+      padding: 18px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .chatbox {
+      height: 350px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .chatbox::-webkit-scrollbar { width: 4px; }
+    .chatbox::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+
+    .bubble-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bubble-wrap.me { align-items: flex-end; }
+    .bubble-wrap.bot { align-items: flex-start; }
+
+    .who {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 4px;
+      padding: 0 6px;
+    }
+
+    .bubble {
+      padding: 9px 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 85%;
+    }
+
+    .bubble.me {
+      background: #7c4dff;
+      color: #fff;
+      border-radius: 18px 18px 4px 18px;
+    }
+
+    .bubble.bot {
+      background: #f0edff;
+      color: #333;
+      border-radius: 18px 18px 18px 4px;
+      border: 1px solid #d4c9ff;
+    }
+
+    .pills {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      background: #f0edff;
+      color: #7c4dff;
+      border: 1.5px solid #c4b5fd;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .pill:hover { background: #e0d9ff; }
+
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .row input {
+      flex: 1;
+      background: #f9f7ff;
+      border: 1.5px solid #d4c9ff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      color: #333;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .row input::placeholder { color: #bbb; }
+    .row input:focus { border-color: #7c4dff; }
+
+    .row button {
+      background: #7c4dff;
+      border: none;
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .row button:hover { background: #6a3de8; }
+    .row button:active { transform: scale(0.95); }
+
+    .row button svg {
+      fill: white;
+      width: 18px;
+      height: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo-wrap">
+    <img src="SRM_Institute_of_Science_and_Technology_Logo.svg.png" alt="SRM Logo">
+  </div>
+
+  <div class="top">
+    <h1>🎓 SRM Buddy</h1>
+    <p>your lazy classmate who knows everything lol</p>
+  </div>
+
+  <div class="box">
+    <div class="chatbox" id="chatbox"></div>
+
+    <div class="pills">
+      <span class="pill" onclick="fill('timetable')">📅 timetable</span>
+      <span class="pill" onclick="fill('teacher')">👩‍🏫 teacher</span>
+      <span class="pill" onclick="fill('find')">🔍 find</span>
+      <span class="pill" onclick="fill('exit')">👋 exit</span>
+    </div>
+
+    <div class="row">
+      <input type="text" id="inp" placeholder="ask something...">
+      <button onclick="send()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let state = "normal";
+
+    const students = [
+      {name: "Pamidighantam Divya Rama Sree", roll: "RA2511026011381"},
+      {name: "Iraiarulanandham Sachithanandam", roll: "RA2511026011382"},
+      {name: "Pradhumn Upadhyay", roll: "RA2511026011383"},
+      {name: "Soorya Thejus S", roll: "RA2511026011384"},
+      {name: "Naitik Kankariya", roll: "RA2511026011385"},
+      {name: "Rishi Raj", roll: "RA2511026011386"},
+      {name: "Mallisetty Gireesh Royal", roll: "RA2511026011387"},
+      {name: "St Md Saif Imaaz", roll: "RA2511026011388"},
+      {name: "Dandu Bhanu Prasad Raju", roll: "RA2511026011389"},
+      {name: "Gujrathi Ayush Balaji", roll: "RA2511026011390"},
+      {name: "Yash Shyan", roll: "RA2511026011391"},
+      {name: "Vaishnav V", roll: "RA2511026011392"},
+      {name: "Aditya Ojha", roll: "RA2511026011393"},
+      {name: "Atharv Maurya", roll: "RA2511026011394"},
+      {name: "Molaka Venkata Pradeep Yadav", roll: "RA2511026011395"},
+      {name: "Saksham", roll: "RA2511026011396"},
+      {name: "Vishnu Vaibhav", roll: "RA2511026011397"},
+      {name: "Modi Pratham Girishkumar", roll: "RA2511026011398"},
+      {name: "Aman Kumar", roll: "RA2511026011399"},
+      {name: "Ambati Mallikarjuna Reddy", roll: "RA2511026011400"},
+      {name: "Paidipati Rishikesh Naidu", roll: "RA2511026011401"},
+      {name: "Ayush Mishra", roll: "RA2511026011402"},
+      {name: "Chittampally Vishnu", roll: "RA2511026011403"},
+      {name: "Muppirisetty Pradeep Sai", roll: "RA2511026011404"},
+      {name: "K Sharuhesh", roll: "RA2511026011405"},
+      {name: "Anumalasetty Srimayi", roll: "RA2511026011406"},
+      {name: "Polepalli Venkata Pushkal", roll: "RA2511026011407"},
+      {name: "Sayan Balial", roll: "RA2511026011408"},
+      {name: "Hanin M A", roll: "RA2511026011409"},
+      {name: "Eklavya Verma", roll: "RA2511026011410"},
+      {name: "Gaddala Karthik", roll: "RA2511026011411"},
+      {name: "Gaddam Druva Ruchir Reddy", roll: "RA2511026011412"},
+      {name: "Dhruv Ayush", roll: "RA2511026011413"},
+      {name: "Tanay Sachan", roll: "RA2511026011414"},
+      {name: "Kumar Aarav Raj", roll: "RA2511026011415"},
+      {name: "Falullah S", roll: "RA2511026011416"},
+      {name: "Bathala Avinash", roll: "RA2511026011417"},
+      {name: "Raj Bardhan Kumar", roll: "RA2511026011418"},
+      {name: "Vaidik Patidar", roll: "RA2511026011419"},
+      {name: "Saran Sanjay", roll: "RA2511026011420"},
+      {name: "Divyashree T", roll: "RA2511026011421"},
+      {name: "Sriyapu Reddy Sathwik Reddy", roll: "RA2511026011422"},
+      {name: "Kunnuru Vashin Kumar Reddy", roll: "RA2511026011423"},
+      {name: "Neha Y", roll: "RA2511026011424"},
+      {name: "Ayush Anand", roll: "RA2511026011425"},
+      {name: "Nagalla Vashini", roll: "RA2511026011426"},
+      {name: "Aradhya Somani", roll: "RA2511026011427"},
+      {name: "Anushka Nagpal", roll: "RA2511026011428"},
+      {name: "Devna Roopesh", roll: "RA2511026011429"},
+      {name: "Varun Karunakaran", roll: "RA2511026011430"},
+      {name: "Keyur Kiran Kakkeri", roll: "RA2511026011431"},
+      {name: "Sakthivel", roll: "RA2511026011432"},
+      {name: "Pragyan", roll: "RA2511026011433"},
+      {name: "Bandi Udaychandu", roll: "RA2511026011434"},
+      {name: "Yeswanth Teja Yellamgari", roll: "RA2511026011435"},
+      {name: "Ananya Gupta", roll: "RA2511026011436"},
+      {name: "Sachin S", roll: "RA2511026011437"},
+      {name: "Hariharan P R", roll: "RA2511026011438"},
+      {name: "Sree Krishna Bachala", roll: "RA2511026011439"},
+      {name: "Vignesh C", roll: "RA2511026011440"},
+      {name: "Parth Mathur", roll: "RA2511026011441"},
+      {name: "Saheer Das Chaloli Thazhe Kuniyil", roll: "RA2511026011442"},
+      {name: "Anchol Sarkar", roll: "RA2511026011443"},
+      {name: "Singavarapu Viswa Teja Reddy", roll: "RA2511026011444"},
+      {name: "Diptanu Debnath", roll: "RA2511026011445"},
+      {name: "Vengateshwarapandi P B", roll: "RA2511026011446"},
+      {name: "Jenkin Joshua S", roll: "RA2511026011447"},
+      {name: "Suryajith Nair", roll: "RA2511026011448"},
+      {name: "Yash Pratap Singh", roll: "RA2511026011449"},
+      {name: "Koduri Abhiram", roll: "RA2511026011450"},
+      {name: "Pranav Bhama", roll: "RA2511026011451"},
+      {name: "Muhammed Zia Zulkifli Kv", roll: "RA2511026011452"}
+    ];
+
+    function addMsg(text, who) {
+      const box = document.getElementById("chatbox");
+      const w = document.createElement("div");
+      w.className = "bubble-wrap " + who;
+
+      const lbl = document.createElement("div");
+      lbl.className = "who";
+      lbl.textContent = who === "me" ? "you" : "buddy";
+
+      const b = document.createElement("div");
+      b.className = "bubble " + who;
+      b.innerHTML = text;
+
+      w.appendChild(lbl);
+      w.appendChild(b);
+      box.appendChild(w);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function fill(v) {
+      document.getElementById("inp").value = v;
+      document.getElementById("inp").focus();
+    }
+
+    function send() {
+      const el = document.getElementById("inp");
+      const val = el.value.trim();
+      if (!val) return;
+
+      addMsg(val, "me");
+      el.value = "";
+      let reply = "";
+
+      if (state === "timetable") {
+        if (val === "1") {
+          reply = "<b>Day 1:</b><br>8:00AM-9:45AM No class<br>9:45AM-11:30AM Semiconductor Physics and Computational Method (Practical)<br>11:30AM-12:30PM BREAK<br>12:30PM-4:00PM Step Classes<br>4:00PM-4:50PM Object Oriented Design and Programming<br><i>-----END OF DAY ORDER 1-----</i>";
+        } else if (val === "2") {
+          reply = "<b>Day 2:</b><br>8:00AM-9:40AM Semiconductor Physics and Computational Method<br>9:45AM-11:30AM Object Oriented Design and Programming<br>11:30AM-12:30PM BREAK<br>12:30PM-1:25PM No Class<br>1:25PM-4:50PM Engineering Graphics and Design<br><i>-----END OF DAY ORDER 2-----</i>";
+        } else if (val === "3") {
+          reply = "<b>Day 3:</b><br>8:00AM-8:50AM No Class<br>8:50AM-9:40AM Environmental Science<br>9:45AM-10:30AM Constitution of India<br>10:30AM-11:30AM No Class<br>11:30AM-12:30PM BREAK<br>12:30PM-2:20PM Electrical and Electronics Engineering<br>2:20PM-3:10PM No Class<br>3:10PM-4:00PM Advanced Calculus and Complex Analysis<br>4:00PM-4:50PM Semiconductor Physics and Computational Method<br><i>-----END OF DAY ORDER 3-----</i>";
+        } else if (val === "4") {
+          reply = "<b>Day 4:</b><br>8:00AM-9:40AM Advanced Calculus and Complex Analysis<br>9:45AM-10:30AM Semiconductor Physics and Computational Method<br>10:30AM-11:30AM Communicative English<br>11:30AM-12:30PM Electrical and Electronics Engineering<br><i>-----END OF DAY ORDER 4-----</i>";
+        } else if (val === "5") {
+          reply = "<b>Day 5:</b><br>8:00AM-8:50AM No Class<br>8:50AM-9:40AM No Class<br>9:45AM-10:30AM No Class<br>10:30AM-11:30AM No Class<br>11:30AM-12:30PM BREAK<br>12:30PM-2:20PM Communicative English<br>2:20PM-3:10PM Electrical and Electronics Engineering<br>3:10PM-4:00PM No Class<br>4:00PM-4:50PM Advanced Calculus and Complex Analysis<br><i>-----END OF DAY ORDER 5-----</i>";
+        } else {
+          reply = "Invalid input. Please enter a day between 1 and 5.";
+        }
+        state = "normal";
+      }
+
+      else if (state === "find") {
+        let search = val.toLowerCase();
+        let foundStr = "";
+        let found = false;
+
+        for (let i = 0; i < students.length; i++) {
+          if (students[i].name.toLowerCase().includes(search)) {
+            foundStr += `Found: <b>${students[i].name}</b> (${students[i].roll})<br>`;
+            found = true;
+          }
+        }
+        
+        if (found) reply = foundStr;
+        else reply = "Student not found 🤷";
+        
+        state = "normal";
+      }
+
+      else {
+        let cmd = val.toLowerCase();
+        if (cmd === "timetable") {
+          reply = "Enter day order (1-5):";
+          state = "timetable";
+        } else if (cmd === "teacher") {
+          reply = "Semiconductor Physics and Computational Method (Practical): <b>Dr. P.C. Karthika</b><br>" +
+                  "Step Class: <b>Tharunprabu Radhakrishnan</b><br>" +
+                  "Object Oriented Design and Programming: <b>Prathiba S</b><br>" +
+                  "Semiconductor Physics and Computational Method: <b>Dr. Muthuganesan R</b><br>" +
+                  "Electrical and Electronics Engineering: <b>Dr. Souvik Mandal</b><br>" +
+                  "Advanced Calculus and Complex Analysis: <b>Dr. R. Perumal</b><br>" +
+                  "Engineering Graphics and Design: <b>Dr. Abburi Lakshman Kumar</b><br>" +
+                  "Environmental Science: <b>Dr. Soumyajit Ghosh</b><br>" +
+                  "Constitution of India: <b>Dr. M.M. Uma Maheshwari</b>";
+        } else if (cmd === "find") {
+          reply = "Enter name to search:";
+          state = "find";
+        } else if (cmd === "exit") {
+          reply = "Bot: Goodbye! 👋";
+        } else {
+          reply = "Bot: Invalid command 😅 try: find, timetable, teacher, exit";
+        }
+      }
+
+      setTimeout(() => addMsg(reply, "bot"), 250);
+    }
+
+    document.getElementById("inp").addEventListener("keypress", e => {
+      if (e.key === "Enter") send();
+    });
+
+    addMsg("heyyy welcome 👋 what do u need?", "bot");
+  </script>
+
+</body>
+</html>
